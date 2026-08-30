@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class Health : MonoBehaviour, IDamageable
@@ -15,10 +16,17 @@ public class Health : MonoBehaviour, IDamageable
     float currentHealth;                            // 현재 체력
     bool isDead;                                    // 대상의 사망여부
 
-    // 외부에서의 현재 체력, 사망을 직접 변경하는걸 막는 용도의 프로퍼티
+    // 외부에서의  체력, 사망을 직접 변경하는걸 막는 용도의 프로퍼티
+    public float MaxHealth { get { return maxHealth; } }
     public float CurrentHealth { get { return currentHealth; } }
     public bool IsDead { get { return isDead; } }
 
+    // 현재 체력이 변경되었다면 호출되는 이벤트
+    // <변경된 현재 체력, 최대 체력> 의 값을 가지고 있습니다
+    public event Action<float, float> OnHealthChanged;
+
+    // 대상이 사망한 순간에 호출되는 이벤트
+    public event Action OnDied;
 
     void Awake()
     {
@@ -54,6 +62,9 @@ public class Health : MonoBehaviour, IDamageable
 
         Debug.Log($"{gameObject.name}이 {damage}의 피해를 받았습니다. 현재 체력 : {currentHealth}");
 
+        // 체력 변경 사실을 전달
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
+
         if (currentHealth <= 0f)
             Die();
     }
@@ -62,15 +73,21 @@ public class Health : MonoBehaviour, IDamageable
     // 현재 체력이 0이 되면 사망 상태로 전환하는 메소드
     void Die()
     {
+        if (isDead)
+            return;
+
         isDead = true;
 
+
         Debug.Log($"{gameObject.name}이 사망하였습니다");
+
+        OnDied?.Invoke();
     }
 
     // 피해 테스트가 적용되는지 확인하기 위한 임시 메소드 적용될 시 삭제 예정
     [ContextMenu("Take Test Damege")]
     void TakeTestDamage()
     {
-        TakeDamage(20f);
+        TakeDamage(100f);
     }
 }

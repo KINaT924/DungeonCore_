@@ -26,6 +26,7 @@ public class PlayerAnimationController : MonoBehaviour
     int isDodgingHash;                                              // Animator의 IsDodging 파라미터 해시값
     int isAttackingHash;                                             // Animator의 isAttacking 파라미터 해시값
     int attackHash;                                                 // Animator의 Attack 트리거 해시값
+    int isDeadHash;                                                 //  Animator의 IsDead 파라미터 해시값
 
     // 스크립터가 최초로 생성되릴 때 필요한 컴퍼넌트와 파라미터 해시값을 정의해서 준비
     // 미리 숫자ID로 변경하는 편이 안정적인 효과를 봄
@@ -42,6 +43,7 @@ public class PlayerAnimationController : MonoBehaviour
         if(playerCombat == null)
             playerCombat = GetComponent<PlayerCombat>();
 
+        // 매번 검색하지않도록 해시값을 통하여 시작할 때 미리 대입
         moveXHash = Animator.StringToHash("MoveX");
         moveYHash = Animator.StringToHash("MoveY");
         moveAmountHash = Animator.StringToHash("MoveAmount");
@@ -49,6 +51,7 @@ public class PlayerAnimationController : MonoBehaviour
         isDodgingHash = Animator.StringToHash("IsDodging");
         isAttackingHash = Animator.StringToHash("IsAttacking");
         attackHash = Animator.StringToHash("Attack");
+        isDeadHash = Animator.StringToHash("IsDead");
 
         if (animator != null)
             animator.applyRootMotion = false;
@@ -63,20 +66,36 @@ public class PlayerAnimationController : MonoBehaviour
 
         if (health != null && health.IsDead)
         {
-            animator.SetFloat(moveXHash, 0f);
-            animator.SetFloat(moveYHash, 0f);
-            animator.SetFloat(moveAmountHash, 0f);
-            animator.SetBool(isMovingHash, false);
-            animator.SetBool(isDodgingHash, false);
-            animator.SetBool(isAttackingHash, false);
+            UpdateDeathAnimation();
             return;
         }
+
+        animator.SetBool(isDeadHash, false);
 
         UpdateMoveAnimation();
         UpdateDodgeAnimation();
         UpdateAttackAnimation();
     }
 
+
+    // 사망 시 이동, 회피, 공격 애니메이션 등 상태를 초기화합니다
+    void UpdateDeathAnimation()
+    {
+        // 사망 시 Death상태로 전환
+        animator.SetBool(isDeadHash, true);
+
+        // 이동 애니메이션 x
+        animator.SetFloat(moveXHash, 0f);
+        animator.SetFloat(moveYHash, 0f);
+        animator.SetFloat(moveAmountHash, 0f);
+        animator.SetBool(isMovingHash, false);
+
+        // 공격 및 회피 애니메이션 x
+        animator.SetBool(isDodgingHash, false);
+        animator.SetBool(isAttackingHash, false);
+        wasAttacking = false;
+        animator.ResetTrigger(attackHash);          // 사망 직전 생성된 Trigger 제거
+    }
     // 플레이어인풋리더에서 현재 입력값을 읽어 애니메이터에 전달하는 역할
     void UpdateMoveAnimation()
     {
