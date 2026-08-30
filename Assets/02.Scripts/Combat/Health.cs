@@ -1,5 +1,3 @@
-using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 
 public class Health : MonoBehaviour, IDamageable
@@ -8,6 +6,9 @@ public class Health : MonoBehaviour, IDamageable
     /// 체력이 존재하는 오브젝트 혹은 캐릭터라면 필요한 체력 관리 컴포넌트
     /// 현재 체력을 저장 및 감소하거나 0이 되었을 시 사망 처리를 실행합니다
     /// </summary>
+
+    [Header("레퍼런스")]
+    [SerializeField] PlayerDodgeController dodgeCtr;                 //  회피컨트롤러 컴포넌트 참조 변수
 
     [Header("체력 설정")]
     [SerializeField] float maxHealth = 100f;        // 대상의 최대 체력
@@ -21,6 +22,9 @@ public class Health : MonoBehaviour, IDamageable
 
     void Awake()
     {
+        if(dodgeCtr == null)
+            dodgeCtr = GetComponent<PlayerDodgeController>();
+
         InitializeHealth();
     }
 
@@ -37,6 +41,8 @@ public class Health : MonoBehaviour, IDamageable
     public void TakeDamage(float damage)
     {
         if (isDead)
+            return;
+        if (dodgeCtr != null && dodgeCtr.IsDodging)
             return;
 
         // 0 이하의 피해가 들어온다면 변경 x

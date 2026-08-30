@@ -11,6 +11,7 @@ public class PlayerCameraController : MonoBehaviour
     [SerializeField] PlayerInputReader inputReader;     // 플레이어 입력값을 전달해주는 스크립트 참조 변수
     [SerializeField] Transform cameraTarget;            // CinemaMachine이 따라갈 타겟
     [SerializeField] Transform playerPos;               // 플레이어의 몸 방향을 돌릴 좌표값
+    [SerializeField] Health health;                     // 플레이어가 사망했는지 알기위한 체력 확인 컴포넌트
 
     [SerializeField] float mouseSenitivity = 0.12f;     // 마우스 감도
     [SerializeField] bool invertY = false;              // 마우스 Y축 반전 여부
@@ -25,6 +26,9 @@ public class PlayerCameraController : MonoBehaviour
 
     private void Awake()
     {
+        if (health == null)
+            health = GetComponent<Health>();
+
         InitializeReferences();
     }
 
@@ -38,6 +42,9 @@ public class PlayerCameraController : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (health != null && health.IsDead)
+            return;
+
         HandleLookInput();
         RotatePlayerBody();
         RotateCameraTarget();

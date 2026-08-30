@@ -13,12 +13,16 @@ public class PlayerMoveController : MonoBehaviour
     CharacterController characterCtr;                            // 실제 플레이어의 이동을 처리하는 컴포넌트 참조 변수
 
     [Header("캐릭터 설정")]
+    [SerializeField] Health health;                              // 플레이어가 사망했는지 알기위한 체력 확인 컴포넌트
     [SerializeField] float moveSpeed = 5f;                       // 플레이어의 기본 이동속도
     [SerializeField] float gravity = -20f;                       // 플레이어 중력값
     float verticalVelocity;                                      // 플레이어 Y축 속도
 
     private void Awake()
     {
+        if(health == null)
+            health = GetComponent<Health>();
+
         characterCtr = GetComponent<CharacterController>();
     }
 
@@ -31,6 +35,9 @@ public class PlayerMoveController : MonoBehaviour
 
     void Update()
     {
+        if (health != null && health.IsDead)
+            return;
+
         HandleMovement();
         HandleGravity();
     }
@@ -39,6 +46,9 @@ public class PlayerMoveController : MonoBehaviour
     // 입력 -> Input System에서 받은 2차원 Vector2을 활용
     void HandleMovement()
     {
+        // 죽었으면 이동x
+        if (health != null && health.IsDead)
+            return;
         // 입력값을 받을 수 없다면 이동 X
         if (inputReader == null)
             return;

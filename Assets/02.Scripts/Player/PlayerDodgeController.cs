@@ -8,8 +8,10 @@ public class PlayerDodgeController : MonoBehaviour
     /// </summary>
 
     [Header("레퍼런스")]
-    [SerializeField] PlayerInputReader inputReader;              // 플레이어 입력값을 전달해주는 스크립트 참조 변수
+    [SerializeField] PlayerInputReader inputReader;              // 플레이어 입력값을 전달해주는 컴포넌트 참조 변수
     [SerializeField] Transform cameraTranform;                   // 회피 방향을 계산하기 위해 사용될 카메라 변수
+    [SerializeField] PlayerCombat playerCombat;                  // 플레이어 입력 판정을 처리하기위한 컴포넌트 참조 변수
+    [SerializeField] Health health;                              // 플레이어가 사망했는지 알기위한 체력 확인 컴포넌트
     CharacterController characterCtr;                            // 실제 플레이어의 회피를 처리하는 컴포넌트 참조 변수
 
     [Header("회피 설정")]
@@ -25,6 +27,11 @@ public class PlayerDodgeController : MonoBehaviour
 
     private void Awake()
     {
+        if (health == null)
+            health = GetComponent<Health>();
+        if (playerCombat == null)
+            playerCombat = GetComponent<PlayerCombat>();
+
         characterCtr = GetComponent<CharacterController>();
     }
     private void OnEnable()
@@ -37,6 +44,13 @@ public class PlayerDodgeController : MonoBehaviour
     }
     void Update()
     {
+        // 죽었으면 행동 x
+        if (health != null && health.IsDead)
+        {
+            EndDodge();
+            return;
+        }
+
         UpdateCoolTimer();
         UpdateDodge();
     }
@@ -66,6 +80,9 @@ public class PlayerDodgeController : MonoBehaviour
     // 회피 불가능한 상태인경우 : 이미 회피 중, 쿨타임이 남아있는 경우, 필요한 참조가 연결되지 않은 경우
     void HandleDodgePressed()
     {
+        // 죽었으면 행동 x
+        if (health != null && health.IsDead)
+            return;
         if (isDodging)
             return;
 
@@ -83,6 +100,10 @@ public class PlayerDodgeController : MonoBehaviour
     // 회피 시작 시점에 필요한 변수들을 초기화하고 회피 상태로 전환합니다
     void StartDodge()
     {
+        // 회피중이면 공격판정을 취소
+        if (playerCombat != null)
+            playerCombat.CancelAttack();
+
         dodgeDir = CalculateDodgeDirection();
         dodgeTimer = dodgeDur;
         coolTimer = dodgeCoolTime;
@@ -133,7 +154,9 @@ public class PlayerDodgeController : MonoBehaviour
     // 회피가 진행 중 일때 이동을 처리하는 메소드
     void UpdateDodge()
     {
-        if(!isDodging)
+        if (health != null && health.IsDead)
+            return;
+        if (!isDodging)
             return;
 
         // 회피중일 때 회피스피드만큼 더 빠르게 이동

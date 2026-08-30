@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class AttackArea : MonoBehaviour
@@ -44,5 +43,54 @@ public class AttackArea : MonoBehaviour
         attackDamage = damage;
         damagedTargets.Clear();
         areaCollider.enabled = true;
+    }
+
+    // 공격이 끝나면서 공격범위 비활성화
+    public void EndAttack()
+    {
+        if(areaCollider == null) 
+            return;
+        areaCollider.enabled = false;
+    }
+
+    // 트리거에 따른 호출
+    private void OnTriggerEnter(Collider other)
+    {
+        TryDamageTarget(other);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        TryDamageTarget(other);
+    }
+
+    // 감지된 콜라이더가 공격 대상인지 확인하고 조건에 맞다면 피해를 적용
+    void TryDamageTarget(Collider target)
+    {
+        // 공격 대상 레이어가 아닌 경우 무시
+        if (((1 << target.gameObject.layer) & targetLayer) == 0)
+            return;
+
+        IDamageable damageable = target.GetComponent<IDamageable>();
+
+        // 공격 대상이 IDamageable을 구현하지 않은 경우 무시
+        if (damageable == null)
+            return;
+        // 이미 피해를 준 대상이라면 무시
+        if (damagedTargets.Contains(damageable))
+            return;
+
+        // 피해 적용
+        damagedTargets.Add(damageable);
+        damageable.TakeDamage(attackDamage);
+    }
+
+    // 공격 범위가 비활성화 될 때 콜라이더를 비활성화하고 피해를 준 대상 목록 초기화
+    private void OnDisable()
+    {
+        if (areaCollider != null)
+            areaCollider.enabled = false;
+
+        damagedTargets.Clear();
     }
 }
