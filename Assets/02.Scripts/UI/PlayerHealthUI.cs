@@ -22,6 +22,10 @@ public class PlayerHealthUI : MonoBehaviour
         BindHealthEvents();
         InitializeHealthUI();
     }
+    private void Start()
+    {
+        InitializeHealthUI();
+    }
     private void OnDisable()
     {
         UnBindHealthEvents();

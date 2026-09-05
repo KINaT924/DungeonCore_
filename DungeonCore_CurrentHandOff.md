@@ -1,728 +1,276 @@
-# DungeonCore 개발 인수인계 - 사망 애니메이션 연결 전
+# DungeonCore 최신 개발 인수인계 — 스킬 입력·개별 쿨타임 스크립트 작성 전
 
-이 문서는 다른 컴퓨터의 Codex 대화에서 DungeonCore 개발을 같은 흐름으로 이어가기 위한 최신 인수인계 자료다.
+최종 갱신: 2026-09-05
 
-새 대화에서는 이 문서를 참고하되, 문서 내용만 믿고 바로 파일을 수정하지 않는다. 반드시 새 컴퓨터에 있는 Unity 프로젝트의 실제 파일을 먼저 읽고 현재 코드와 Inspector 상태를 확인한 뒤 안내한다.
+## 1. 정확한 중단 지점
 
----
+**PlayerSkillController 전체 코드와 Inspector 연결법을 안내했지만, 사용자가 아직 작성·적용하지 않은 상태다. 다음 대화는 이 스크립트 작성 단계부터 재개한다.**
 
-## 1. 협업 방식
+- 사용자 최종 요청: “아직 입력 및 개별 쿨타임을 적용하지 못했어 이 스크립트 작성단계 그대로 인수인계 md파일에 최신화 해줄래?”
+- 갱신 시 실제 확인: `Assets/02.Scripts/Player/PlayerSkillController.cs` 파일 없음.
+- 스킬 입력, 개별 쿨타임, 시전 상태, 피해 판정, 취소 통합을 완료로 취급하지 않는다.
+- 이 문서의 코드는 **미적용 학습안**이며 실제 구현 파일이 아니다.
+- 새로운 대화에서는 실제 파일과 이 문서, `8주간의 계획서.md`, `현재 주간목표서.md`를 대조한다. 이전 계획 문서에는 체력 UI 부분 완료 및 스킬 1개 범위가 남아 있을 수 있다. 최신 사용자 결정은 아래 기록을 따른다.
 
-사용자는 코드를 단순 복사하기보다 각 코드가 왜 필요한지 이해하면서 직접 작성하기를 원한다.
+## 2. 협업 및 학습 방식
 
-앞으로 반드시 다음 방식을 유지한다.
+- 취업용 Unity 포트폴리오 프로젝트다.
+- 사용자가 직접 이해하고 작성하는 단계별 학습을 원한다.
+- 명확한 파일 생성·수정·적용 요청이 없으면 실제 코드·씬·프리팹을 자동 수정하지 않는다. 문서 갱신 요청을 구현 승인으로 확대하지 않는다.
+- 코드를 제안할 때 전체 코드, 변경 지점, 클래스·필드·프로퍼티·메서드의 역할과 이유를 설명하는 주석을 제공한다.
+- Hierarchy 선택 대상, Inspector 컴포넌트와 필드, 드래그할 대상, Animator·Animation Event·Collider·Layer·Prefab 설정을 구체적으로 안내한다.
+- 한 단계의 테스트 결과를 확인한 뒤 다음 단계로 넘어간다. 안내와 구현 완료를 구분한다.
+- 기능별 학습 효과, 포트폴리오에서 설명 가능한 장점과 선택 이유, 실제 구조의 한계를 함께 설명한다.
+- 사용자 네이밍을 유지한다. `cameraTranform`, `moveDir`, `characterCtr`, `dodgeCtr`, `dodgeDur`, `dodgeCoolTime`, `coolTimer`, `BindInputEvents()`, `UnBindInputEvents()` 등을 임의 정리하지 않는다.
+- 일부 스크립트의 한글은 UTF-8 읽기에서 깨져 보였다. 원본 인코딩을 확인하지 않고 주석·파일을 일괄 재저장하지 않는다.
+- 실제 Unity 실행을 하지 않았다면 실행 검증했다고 말하지 않는다.
 
-- 사용자가 명확히 `파일을 만들어줘`, `직접 수정해줘`, `적용해줘`라고 요청하지 않으면 프로젝트 파일을 직접 생성하거나 수정하지 않는다.
-- 기본적으로 Codex는 파일을 읽고, 구조를 분석한 뒤, 사용자가 직접 적용할 수 있게 방향성과 전체 코드를 보여준다.
-- 새로운 스크립트나 수정안을 안내할 때는 전체 코드와 변경 지점을 함께 보여준다.
-- 클래스, 변수, 프로퍼티, 메소드마다 역할을 알 수 있도록 주석을 자세히 포함한다.
-- Unity Inspector에서 무엇을 어디에 연결해야 하는지 구체적으로 설명한다.
-- Animator, Animation Event, Collider, Layer, Prefab Override처럼 Unity 에디터에서 확인해야 하는 부분을 빠뜨리지 않는다.
-- 정상 적용 여부를 확인하는 테스트 절차와, 작동하지 않을 때 확인할 항목을 같이 설명한다.
-- 기존 프로젝트의 실제 코드를 먼저 확인한다.
-- 사용자가 정한 네이밍을 임의로 바꾸지 않는다.
-- 코드 개선점이 있어도 자동으로 고치지 말고 이유를 먼저 설명한다.
+## 3. 프로젝트 방향과 완료 범위
 
-사용자가 유지 중인 주요 네이밍:
+- Unity 6.3 기반 3D TPS 액션, 8주 싱글 MVP 우선.
+- 전사와 거너, 몬스터·에너지·코어·성장 카드·탈출·보스전으로 이어지는 게임.
+- 1주차 전사 기반 완료: 입력, 카메라, 이동, 기본 공격, 회피와 무적, Health/IDamageable, 사망과 행동 차단, 애니메이션 및 통합 테스트.
+- 2주차 진행 중: Enemy_Dummy 피해·사망·중복 피해 방지와 Health 이벤트 구조 완료.
+- **플레이어 체력 UI는 사용자 정상 동작 확인 완료.** 시작 표시, 피해 갱신, 사망 흐름이 정상이라고 보고했다.
+- 사용자가 체력 UI 크기·위치를 보기 좋게 조정했다. 기존 배치를 보존한다.
+- 체력 UI 초기 0/100 문제는 `Health.Awake()`보다 `PlayerHealthUI.OnEnable()`이 먼저 읽을 수 있는 초기화 순서 문제로 분석했다. `PlayerHealthUI.Start()`에서 `InitializeHealthUI()`를 다시 호출하는 수정이 실제 파일에 있으며 사용자 정상 동작 확인.
+- 현재 스킬은 원래 1개에서 **2개로 범위 확대**. 기본 공격 모션·범위 변경은 보류하고 두 스킬부터 작업한다. 기존 기본 공격 구현을 삭제하거나 비활성화하라는 뜻은 아니다.
 
-```text
-PlayerMoveController
-moveDir
-characterCtr
-cameraTranform
-playerPos
-dodgeCtr
-dodgeDur
-dodgeCoolTime
-coolTimer
-BindInputEvents()
-UnBindInputEvents()
-UpdateCoolTimer()
-Health
-maxHealth
-currentHealth
-CurrentHealth
-AttackArea
-PlayerCombat
-PlayerAnimationController
-```
+## 4. 미술 방향 — 확정된 사용자 결정
 
-`cameraTranform`은 영어 철자로는 오타지만 현재 프로젝트 네이밍이므로 임의로 `cameraTransform`으로 바꾸지 않는다.
+- 전사·거너는 현재 KayKit SD 캐릭터를 유지한다. 모델 교체를 다시 추진하지 않는다.
+- 사용자가 만든 `Assets/03.Art/Prefabs/Map/Map Group.prefab`은 POLYGON city pack 기반 도시 맵이다. 도로·공원·건물·가로등·주차장·외곽 벽 등이 있으며 사용자가 전체와 인게임 화면을 제공했다.
+- 조명을 어둡게 조정해 분위기를 살릴 계획이며 몬스터도 과도하게 크게 만들지 않을 예정이다.
+- SD의 귀여움을 최우선으로 고른 것은 아니지만, 전사·거너 에셋 확보와 전체 제작 방향을 고려해 **현재 캐릭터 유지로 최종 결정**했다.
+- 기본 공격과 스킬은 검 모델 길이에만 한정하지 않고 확장된 범위를 의도한다.
+- **이펙트는 추후 추가**한다. 지금 검기 이펙트 제작이나 최종 시각 범위 확정을 선행 조건으로 삼지 않는다. 이후 이펙트와 실제 판정을 맞춘다.
 
----
+## 5. 스킬 명칭과 모션
 
-## 2. 프로젝트 개요
+| 구분 | 사용자 의도 Animator 상태 이름 | 클립 | 입력 |
+|---|---|---|---|
+| Skill1 | Skill1_SlashAttack | Attack_Slash.anim | Skill1 / 키보드 1 |
+| Skill2 | Skill2_SpinAttack | Attack_Spin.anim | Skill2 / 키보드 2 |
 
-- 프로젝트: DungeonCore
-- 엔진: Unity 6.3 (`6000.3.8f1`)
-- 장르: 3D 액션
-- 시점: 3인칭 백뷰/TPS
-- 목표: 취업용 Unity 포트폴리오
-- 현재 목표: 8주 MVP 기준 싱글 플레이 완성
-- 이동: `CharacterController`
-- 입력: Unity Input System 1.18.0
-- 카메라: Cinemachine 3.1.7
+- 처음 제안한 `SpinSkill` 상태 이름은 사용자가 `Skill2_SpinAttack`으로 바꿨다. 최신 이름 사용.
+- `Attack_Slash.anim`: 약 0.97초, 30 FPS, Loop 꺼짐.
+- `Attack_Spin.anim`: 1.2초, 30 FPS, Loop 꺼짐.
+- 이전 검사에서 두 클립 Animation Event는 비어 있었다. 연결 단계에서 재확인.
+- **갱신 시 실제 Animator 불일치 발견:** Slash 클립을 참조하는 상태 이름이 `Skill2_SlashAttack`으로 저장되어 있다. 사용자 의도는 `Skill1_SlashAttack`이므로 다음 Animator 연결 단계에서 확인·안내한다. 자동 수정하지 않았다.
+- 저장된 Animator에는 `Skill1`, `Skill2` 파라미터와 `Skill2_SpinAttack` 상태가 존재한다. 이것만으로 키 입력 시전 구현 완료라고 판단하지 않는다.
 
-현재 MVP는 싱글 플레이 완성을 우선한다. 멀티플레이는 싱글 MVP 안정화 이후 시간이 남을 때만 고려한다.
+## 6. 이전 Mixamo 조사와 주의사항
 
-핵심 게임 루프:
+- `X Bot@Sword And Shield Slash.fbx` 원본 위치: `Assets/99.Assets/kaykit_Anim/Animations/`.
+- 원본은 Humanoid / Create From This Model. 사용자는 X Bot은 정상, 전사만 뒤틀린다고 확인했다.
+- Knight의 실제 chest 뼈가 Avatar Chest에 매핑되지 않은 점을 발견해 보완을 안내했지만, 사용자는 모션 개선이 없다고 보고했다. **Chest가 확정 원인 또는 해결책이었다고 기록하지 않는다.**
+- 이후 Inspector 오류 3개가 발생했으나 사용자 최종 보고로 사라졌다. Editor.log의 AnimatorInspector/GameObjectInspector/TransformInspector.OnEnable 내부 참조 오류였으며 스킬 코드 오류가 아니었다.
+- FBX에서 생성되는 Avatar와 독립 `Assets/03.Art/Animations/KnightAvatar.asset`은 별개다. 이전 검사에서 Player는 독립 Avatar를 참조했다. 불필요한 Avatar 재변경은 하지 않는다.
+- 사용자는 새 `Attack_Slash`, `Attack_Spin`으로 방향을 바꿨다. Mixamo 문제 재조사를 현재 작업의 선행 조건으로 만들지 않는다.
 
-```text
-게임 시작
--> 이차원 진입
--> 몬스터 전투
--> 에너지 획득
--> 코어 공략
--> 영혼의 격 상승
--> 성장 카드 선택
--> 캐릭터 강화
--> 탈출 조건 충족
--> 이차원 탈출
--> 몽마퀸 보스전
--> 클리어
-```
+## 7. 현재 재사용할 코드와 범위 구성 상태
 
----
+- `PlayerInputReader`에는 `Skill1Pressed`, `Skill2Pressed`, `OnSkill1()`, `OnSkill2()`가 이미 존재한다.
+- Player Input의 Unity Events 연결과 숫자 키 바인딩은 다음 입력 테스트 시 실제 확인한다.
+- `Health.IsDead`, `PlayerDodgeController.IsDodging`을 읽어 스킬 사용을 차단할 수 있다.
+- `AttackArea`는 `GetComponent<Collider>()`, `BeginAttack(damage)`, `EndAttack()`, `HashSet<IDamageable>`로 범위와 공격당 중복 피해를 관리한다.
+- 대상은 현재 `target.GetComponent<IDamageable>()`로 찾는다. 적 Collider와 Health가 서로 다른 오브젝트에 있으면 후속 검토 필요.
+- 앞서 Player 아래 `Skill1Area`(Box), `Skill2Area`(Sphere), 각각 Rigidbody/AttackArea 구성법을 안내했지만 **사용자가 완료했다고 확인하지 않았다.** 생성 완료를 가정하지 않는다.
+- 범위 초기 제안은 Skill1 Box Center (0,1,1.5), Size (3,2,3), Skill2 Sphere Center (0,1,0), Radius 2였다. 확정 수치가 아니다. 구형 판정의 높이 범위와 회전 검기의 순차 판정은 추후 검토.
 
-## 3. 현재 실제 파일 구성
+## 8. 바로 재개할 학습안 — 입력과 개별 쿨타임
 
-주요 스크립트:
+작성할 파일: `Assets/02.Scripts/Player/PlayerSkillController.cs`
 
-```text
-Assets/02.Scripts/Input/PlayerInputReader.cs
-Assets/02.Scripts/Player/PlayerMoveController.cs
-Assets/02.Scripts/Player/PlayerCameraController.cs
-Assets/02.Scripts/Player/PlayerDodgeController.cs
-Assets/02.Scripts/Player/PlayerCombat.cs
-Assets/02.Scripts/Player/PlayerAnimationController.cs
-Assets/02.Scripts/Combat/AttackArea.cs
-Assets/02.Scripts/Combat/Health.cs
-Assets/02.Scripts/Infetface/IDamageable.cs
-```
+이번 단계는 입력 승인 로그와 독립 타이머만 확인한다. 애니메이션·피해·시전 상태는 아직 연결하지 않는다. 따라서 1과 2를 연속으로 누르면 둘 다 승인되는 것이 이 단계에서는 정상이다.
 
-현재 `IDamageable` 폴더 경로에는 오타가 있다.
-
-```text
-Assets/02.Scripts/Infetface/IDamageable.cs
-```
-
-원래 의도는 `Interface`지만, 사용자의 명시 요청 없이 폴더명을 자동 변경하지 않는다.
-
-애니메이션 관련 파일:
-
-```text
-Assets/03.Art/Animations/PlayerAnimatorController.controller
-Assets/03.Art/Animations/KnightAvatar.asset
-Assets/03.Art/Animations/Idle_A.anim
-Assets/03.Art/Animations/Running_A.anim
-Assets/03.Art/Animations/Attack_Slice_Horizontal.anim
-Assets/03.Art/Animations/Dodge_Forward.anim
-```
-
-KayKit 애니메이션 원본 위치:
-
-```text
-Assets/99.Assets/kaykit_Anim/Animations/fbx/Rig_Medium
-```
-
-주요 사용 클립:
-
-```text
-Idle_A
-Running_A
-Melee_1H_Attack_Slice_Horizontal
-Dodge_Forward
-```
-
-나중에 방향별 이동/회피 확장에 쓸 수 있는 클립:
-
-```text
-Running_Strafe_Left
-Running_Strafe_Right
-Walking_Backwards
-Dodge_Backward
-Dodge_Left
-Dodge_Right
-```
-
----
-
-## 4. 현재 완료된 시스템
-
-완료된 흐름:
-
-```text
-[x] Input System 입력 구조
-[x] PlayerInputReader
-[x] Cinemachine 기반 TPS 카메라
-[x] 마우스 시점 기준 Player 몸 방향 회전
-[x] PUBG식 이동 구조
-[x] CharacterController 이동
-[x] 회피 시스템
-[x] 회피 중 일반 이동 불가
-[x] 공격 중 회피 가능
-[x] 공격 중 회피 시 공격 캔슬
-[x] 회피 중 무적
-[x] Health / IDamageable
-[x] AttackArea 기본 공격 판정
-[x] PlayerCombat 기본 공격 입력/쿨타임/판정
-[x] Animator 연결
-[x] Idle / Move / Attack 애니메이션 연결
-[x] 이동 애니메이션 Loop Time 문제 해결
-[x] 공격 Animation Event 연결
-[x] 회피 애니메이션 연결
-[x] 사망 중 이동/공격/회피/카메라 입력 차단 방향 정리
-```
-
-현재 1주차 목표를 `플레이어 기본 조작 + 기본 전투 뼈대`로 보면 90% 이상 완료된 상태다.
-
----
-
-## 5. 플레이어 이동/카메라 방식
-
-현재 이동은 PUBG 같은 TPS 방식이다.
-
-```text
-마우스 시점 방향 -> 캐릭터가 바라보는 방향
-W -> 전진
-S -> 뒤돌지 않고 후진
-A/D -> 몸을 돌리지 않고 좌우 이동
-```
-
-현재는 이동 애니메이션이 `Running_A` 하나라 좌우 이동 시 앞으로 뛰는 모션처럼 보일 수 있다. 이는 현재 단계에서는 정상이다. 나중에 `MoveX`, `MoveY`를 이용한 2D Blend Tree로 방향별 이동 모션을 확장한다.
-
-현재 중요한 규칙:
-
-```text
-회피 중 일반 이동 불가
-공격 중 일반 이동 가능
-사망 중 일반 이동 불가
-```
-
-`PlayerMoveController`에는 `Health` 참조를 두고 `health.IsDead`일 때 이동을 막는 구조가 들어갔다. 다만 죽은 뒤에도 걷는 것처럼 보인다면 실제 위치 이동인지, Animator의 이동 모션만 반응하는지 먼저 구분해야 한다.
-
-확인 방법:
-
-```text
-Play 중 Player 선택
--> Transform Position X/Z 확인
--> WASD를 눌렀을 때 Position이 바뀌면 실제 이동
--> Position은 그대로인데 걷기 모션만 나오면 PlayerAnimationController 문제
-```
-
-`PlayerCameraController`에도 `Health` 참조를 두고 죽으면 `LateUpdate()`에서 조기 반환하도록 안내했다. 이렇게 해야 죽은 뒤 마우스 시점/몸 회전도 멈춘다.
-
----
-
-## 6. 입력 구조
-
-Input Action:
-
-```text
-Move      - WASD
-Look      - Mouse Delta
-Attack    - Left Mouse Button
-Dodge     - Left Shift
-Skill1    - Keyboard 1
-Skill2    - Keyboard 2
-Skill3    - Keyboard 3
-Interact  - Keyboard E
-```
-
-`PlayerInputReader`는 입력 값을 저장하고 버튼 입력은 이벤트로 제공한다.
+아래는 직전 안내한 구현 내용이다. 작성 시작 전에 실제 파일 유무를 다시 확인하고, 사용자가 직접 작성할 수 있도록 설명한다.
 
 ```csharp
-public event System.Action AttackPressed;
-public event System.Action DodgePressed;
-public event System.Action Skill1Pressed;
-public event System.Action Skill2Pressed;
-public event System.Action Skill3Pressed;
-public event System.Action InteractPressed;
-```
+using UnityEngine;
 
----
-
-## 7. Health / Damage 상태
-
-`Health`는 `IDamageable`을 구현한다.
-
-역할:
-
-```text
-IDamageable
--> 피해를 받을 수 있는 대상이 구현하는 공통 규칙
-
-Health
--> 최대 체력, 현재 체력, 사망 여부, TakeDamage 처리
-```
-
-현재 `Health`에는 `PlayerDodgeController dodgeCtr` 참조를 추가해서 회피 중 피해를 무시하도록 했다.
-
-핵심 규칙:
-
-```csharp
-if (dodgeCtr != null && dodgeCtr.IsDodging)
-    return;
-```
-
-주의:
-
-- 이 구조는 플레이어의 `Health`에는 적합하다.
-- 나중에 Enemy도 같은 `Health`를 공유한다면 Enemy에는 `dodgeCtr`가 없으므로 그냥 일반 피해 처리된다.
-- 장기적으로는 `Invincible`, `DamageReceiver`, `CharacterState` 같은 별도 구조로 분리할 수 있지만 지금은 1주차 범위라 현재 방식이 충분하다.
-
----
-
-## 8. AttackArea 상태
-
-현재 공격 범위는 `AttackArea` 자식 오브젝트의 `BoxCollider`로 관리한다.
-
-Hierarchy 권장 구조:
-
-```text
-Player
-├─ CameraTarget
-└─ AttackArea
-   ├─ BoxCollider
-   ├─ Rigidbody
-   └─ AttackArea
-```
-
-AttackArea 설정:
-
-```text
-BoxCollider
--> Is Trigger: On
-
-Rigidbody
--> Use Gravity: Off
--> Is Kinematic: On
-
-AttackArea
--> Target Layer: Enemy
-```
-
-현재 `AttackArea`는 다음 역할을 담당한다.
-
-```text
-공격 Collider 관리
-Layer 검사
-Trigger로 대상 감지
-IDamageable 검색
-같은 공격의 중복 피해 방지
-PlayerCombat에서 받은 피해량을 실제 대상에게 전달
-```
-
-현재 `TryDamageTarget(Collider target)`에서 사용자가 작성한 방식은:
-
-```csharp
-IDamageable damageable = target.GetComponent<IDamageable>();
-```
-
-나중에 적의 Collider가 자식 오브젝트에 있고 `Health`가 부모에 있으면 공격이 안 맞을 수 있다. 그 경우 다음으로 바꾸는 것을 추천한다.
-
-```csharp
-IDamageable damageable = target.GetComponentInParent<IDamageable>();
-```
-
-단, 사용자가 요청하기 전에는 자동 수정하지 않는다.
-
----
-
-## 9. PlayerCombat 상태
-
-현재 `PlayerCombat`은 기본 공격 입력과 공격 상태를 관리한다.
-
-현재 구조:
-
-```text
-inputReader
-attackArea
-dodgeCtr
-health
-attackDamage
-attackCoolTime
-coolTimer
-isAttacking
-IsAttacking
-BindInputEvents()
-UnBindInputEvents()
-HandleAttackPressed()
-StartAttack()
-CancelAttack()
-EnableAttackArea()
-DisableAttackArea()
-EndAttack()
-UpdateCoolTimer()
-```
-
-현재 전투 규칙:
-
-```text
-회피 중 공격 불가
-공격 중 회피 가능
-공격 중 회피하면 공격 캔슬
-공격 중 일반 이동 가능
-사망 중 공격 불가
-```
-
-공격 판정은 더 이상 코루틴 시간으로 켜고 끄지 않는다. 현재는 Animation Event에서 아래 메소드를 호출한다.
-
-```csharp
-public void EnableAttackArea()
-public void DisableAttackArea()
-public void EndAttack()
-```
-
-공격 애니메이션 이벤트 구성:
-
-```text
-Melee_1H_Attack_Slice_Horizontal
--> 검 휘두르기 시작: EnableAttackArea
--> 검 휘두르기 끝: DisableAttackArea
--> 공격 모션 끝부분: EndAttack
-```
-
-공격 중 회피 캔슬:
-
-```csharp
-public void CancelAttack()
+/// <summary>
+/// Skill1, Skill2 입력과 개별 쿨타임을 관리합니다.
+/// 현재는 사용 조건을 검사하고 로그로 확인하는 학습 단계입니다.
+/// 애니메이션, 판정, 스킬 취소는 이후 연결합니다.
+/// </summary>
+public class PlayerSkillController : MonoBehaviour
 {
-    isAttacking = false;
-    DisableAttackArea();
+    [Header("레퍼런스")]
+    // 스킬 입력 이벤트를 제공하는 컴포넌트입니다.
+    [SerializeField] PlayerInputReader inputReader;
+    // 사망 상태에서 사용을 차단합니다.
+    [SerializeField] Health health;
+    // 회피 중 사용을 차단합니다.
+    [SerializeField] PlayerDodgeController dodgeCtr;
+
+    [Header("스킬 쿨타임")]
+    // 초기 테스트 설정값이며 최종 밸런스가 아닙니다.
+    [SerializeField, Min(0f)] float skill1CoolTime = 5f;
+    [SerializeField, Min(0f)] float skill2CoolTime = 8f;
+
+    // 설정값과 별도로 현재 남은 시간을 저장합니다.
+    float skill1CoolTimer;
+    float skill2CoolTimer;
+
+    // 이후 UI가 읽을 수 있도록 외부 변경은 허용하지 않습니다.
+    public float Skill1RemainingCooldown
+    {
+        get { return skill1CoolTimer; }
+    }
+    public float Skill2RemainingCooldown
+    {
+        get { return skill2CoolTimer; }
+    }
+
+    // Inspector 참조가 없으면 같은 오브젝트에서 찾습니다.
+    private void Awake()
+    {
+        if (inputReader == null)
+            inputReader = GetComponent<PlayerInputReader>();
+        if (health == null)
+            health = GetComponent<Health>();
+        if (dodgeCtr == null)
+            dodgeCtr = GetComponent<PlayerDodgeController>();
+
+        if (inputReader == null || health == null || dodgeCtr == null)
+            Debug.LogError("PlayerSkillController의 레퍼런스를 확인하세요.", this);
+    }
+
+    // 활성화 시 입력 알림을 등록합니다.
+    private void OnEnable()
+    {
+        BindInputEvents();
+    }
+
+    // 비활성화 시 등록한 입력 알림을 해제합니다.
+    private void OnDisable()
+    {
+        UnBindInputEvents();
+    }
+
+    // 두 타이머를 프레임 소요 시간만큼 감소시킵니다.
+    private void Update()
+    {
+        UpdateCoolTimers();
+    }
+
+    // 입력별 처리 메서드를 각각 구독합니다.
+    void BindInputEvents()
+    {
+        if (inputReader == null)
+            return;
+        inputReader.Skill1Pressed += HandleSkill1Pressed;
+        inputReader.Skill2Pressed += HandleSkill2Pressed;
+    }
+
+    // 동일한 이벤트와 메서드 조합으로 구독을 해제합니다.
+    void UnBindInputEvents()
+    {
+        if (inputReader == null)
+            return;
+        inputReader.Skill1Pressed -= HandleSkill1Pressed;
+        inputReader.Skill2Pressed -= HandleSkill2Pressed;
+    }
+
+    // 공통 사용 조건입니다. 개별 쿨타임은 각 핸들러에서 검사합니다.
+    bool CanUseSkill()
+    {
+        if (health == null || dodgeCtr == null)
+            return false;
+        if (health.IsDead)
+            return false;
+        if (dodgeCtr.IsDodging)
+            return false;
+        return true;
+    }
+
+    // Skill1 조건을 통과했을 때만 사용을 승인합니다.
+    void HandleSkill1Pressed()
+    {
+        if (!CanUseSkill())
+            return;
+        if (skill1CoolTimer > 0f)
+        {
+            Debug.Log($"Skill1 쿨타임: {skill1CoolTimer:F1}초 남음", this);
+            return;
+        }
+        UseSkill1();
+    }
+
+    // Skill2는 Skill1과 별개의 타이머를 검사합니다.
+    void HandleSkill2Pressed()
+    {
+        if (!CanUseSkill())
+            return;
+        if (skill2CoolTimer > 0f)
+        {
+            Debug.Log($"Skill2 쿨타임: {skill2CoolTimer:F1}초 남음", this);
+            return;
+        }
+        UseSkill2();
+    }
+
+    // 승인 시 Skill1 타이머만 시작합니다.
+    void UseSkill1()
+    {
+        skill1CoolTimer = skill1CoolTime;
+        Debug.Log("Skill1_SlashAttack 사용 승인", this);
+    }
+
+    // 승인 시 Skill2 타이머만 시작합니다.
+    void UseSkill2()
+    {
+        skill2CoolTimer = skill2CoolTime;
+        Debug.Log("Skill2_SpinAttack 사용 승인", this);
+    }
+
+    // 음수가 되지 않도록 0으로 제한합니다.
+    void UpdateCoolTimers()
+    {
+        skill1CoolTimer = Mathf.Max(0f, skill1CoolTimer - Time.deltaTime);
+        skill2CoolTimer = Mathf.Max(0f, skill2CoolTimer - Time.deltaTime);
+    }
 }
 ```
 
-`PlayerDodgeController.StartDodge()` 시작 부분에서 `playerCombat.CancelAttack()`을 호출하도록 안내했고, 사용자가 적용 및 테스트 완료했다.
+### Inspector 연결
 
----
+1. Play 종료 후 PlayerInputReader, Health, PlayerDodgeController가 붙은 Player에 PlayerSkillController 추가.
+2. Input Reader → Player의 PlayerInputReader.
+3. Health → Player의 Health.
+4. Dodge Ctr → Player의 PlayerDodgeController.
+5. Skill1 Cool Time → 5, Skill2 Cool Time → 8 (테스트 값).
+6. Player Input → Events → 해당 Action Map에서 Skill1 → PlayerInputReader.OnSkill1, Skill2 → PlayerInputReader.OnSkill2 확인. 기존 항목을 중복 추가하지 않는다.
 
-## 10. PlayerDodgeController 상태
+### 테스트와 완료 기준 — 모두 아직 미확인
 
-현재 `PlayerDodgeController`는 회피 입력, 회피 방향, 회피 이동, 쿨타임을 관리한다.
+- [ ] 컴파일 오류 없이 컴포넌트 추가 및 참조 연결.
+- [ ] Game 창에서 1 입력 → Skill1_SlashAttack 사용 승인 로그.
+- [ ] 바로 1 재입력 → 남은 쿨타임 출력.
+- [ ] Skill1 쿨타임 중 2 입력 → Skill2_SpinAttack 승인 로그.
+- [ ] 바로 2 재입력 → Skill2 남은 쿨타임 출력.
+- [ ] 각각 5초/8초 경과 후 해당 스킬 재승인.
+- [ ] 회피 중·사망 후 사용 승인 없음.
 
-현재 구조:
+학습 효과: 입력 이벤트와 스킬 책임 분리, 설정값과 실행 상태 구분, 개별 타이머, 읽기 전용 프로퍼티를 통한 추후 UI 연결, 활성화/비활성화 구독 관리.
 
-```text
-inputReader
-cameraTranform
-playerCombat
-health
-characterCtr
-dodgeSpeed
-dodgeDur
-dodgeCoolTime
-dodgeDir
-dodgeTimer
-coolTimer
-isDodging
-IsDodging
-BindInputEvents()
-UnBindInputEvents()
-HandleDodgePressed()
-StartDodge()
-CalculateDodgeDirection()
-UpdateCoolTimer()
-UpdateDodge()
-EndDodge()
-```
+## 9. 입력 테스트 이후 진행할 작업
 
-현재 규칙:
+아래는 후속 계획이며 구현 완료가 아니다.
 
-```text
-사망 중 회피 불가
-회피 중 재회피 불가
-회피 쿨타임 중 회피 불가
-회피 시작 시 공격 중이면 공격 취소
-```
+1. 현재 사용 중인 스킬 상태와 외부 읽기 구조 추가.
+2. 스킬 중 다른 스킬과 기본 공격 차단, 이동 규칙 연결.
+3. PlayerAnimationController와 Skill1/Skill2 Trigger 연결.
+4. Skill1_SlashAttack / Skill2_SpinAttack 상태 전환 확인. Slash 상태 명칭 불일치 점검.
+5. Animation Event에서 공격 범위 활성·비활성·스킬 종료 연결.
+6. 회피·사망 시 취소와 판정 즉시 종료. 취소해도 시작한 쿨타임 유지하는 방향을 제안했으며 연결 단계에서 확인.
+7. Enemy_Dummy 피해와 공격당 중복 피해 방지 확인. Spin은 우선 적마다 사용 1회당 피해 1회인 설계안.
+8. 실제 플레이 결과에 맞춰 범위·피해량·쿨타임 조정.
+9. 이펙트는 추후 추가하고 최종 시각 범위와 판정 동기화.
 
-Inspector 추천값:
+기본 공격의 새 모션·범위 제작은 보류한다. 다만 스킬과의 상태 충돌 차단은 필요한 통합 범위다.
 
-```text
-dodgeSpeed: 12 ~ 18
-dodgeDur: 0.35 ~ 0.45
-dodgeCoolTime: 0.8
-```
+## 10. 다음 대화 시작 문장
 
-현재 테스트 중 사용한 값:
-
-```text
-dodgeSpeed: 15
-dodgeDur: 0.4
-dodgeCoolTime: 0.8
-```
-
----
-
-## 11. PlayerAnimationController 상태
-
-현재 `PlayerAnimationController`는 실제 이동/공격/회피를 처리하지 않고 Animator 파라미터만 갱신한다.
-
-역할:
-
-```text
-PlayerInputReader.MoveInput 읽기
-PlayerDodgeController.IsDodging 읽기
-PlayerCombat.IsAttacking 읽기
-Animator 파라미터 갱신
-```
-
-현재 Animator 파라미터:
-
-```text
-Float   MoveX
-Float   MoveY
-Float   MoveAmount
-Bool    IsMoving
-Bool    IsDodging
-Bool    IsAttacking
-Trigger Attack
-```
-
-최근 문제:
-
-죽은 뒤 WASD를 누르면 실제 위치 이동은 막혀도 걷는 모션이 나와서 이동하는 것처럼 보일 수 있었다. 원인은 `PlayerAnimationController`가 죽은 상태를 모르고 계속 `MoveInput`을 Animator에 전달하기 때문이다.
-
-해결 방향:
-
-```text
-PlayerAnimationController에 Health 참조 추가
-죽었을 때 이동/회피/공격 파라미터를 false 또는 0으로 초기화
-다음 단계에서 IsDead 파라미터까지 추가해 Death 애니메이션으로 전환
-```
-
-현재 안내한 핵심 코드:
-
-```csharp
-if (health != null && health.IsDead)
-{
-    animator.SetFloat(moveXHash, 0f);
-    animator.SetFloat(moveYHash, 0f);
-    animator.SetFloat(moveAmountHash, 0f);
-    animator.SetBool(isMovingHash, false);
-    animator.SetBool(isDodgingHash, false);
-    animator.SetBool(isAttackingHash, false);
-    return;
-}
-```
-
-다음 대화에서는 실제 `PlayerAnimationController.cs`를 먼저 읽고 이 내용이 반영되어 있는지 확인해야 한다.
-
----
-
-## 12. Animator / Animation 현재 상태
-
-현재 Animator Controller:
-
-```text
-Assets/03.Art/Animations/PlayerAnimatorController.controller
-```
-
-Player의 Animator:
-
-```text
-Controller: PlayerAnimatorController
-Avatar: KnightAvatar.asset
-Apply Root Motion: Off
-```
-
-기본 상태:
-
-```text
-Idle_A
-Running_A
-Attack_Slice_Horizontal
-Dodge
-```
-
-기본 전환:
-
-```text
-Idle_A -> Running_A
-Condition: IsMoving == true
-Has Exit Time: Off
-
-Running_A -> Idle_A
-Condition: IsMoving == false
-Has Exit Time: Off
-
-Any State -> Attack_Slice_Horizontal
-Condition: Attack Trigger
-Has Exit Time: Off
-
-Attack_Slice_Horizontal -> Idle_A
-Has Exit Time: On
-Condition 없음
-
-Any State -> Dodge
-Condition: IsDodging == true
-Has Exit Time: Off
-
-Dodge -> Idle_A
-Condition: IsDodging == false
-Has Exit Time: Off
-```
-
-Loop 설정:
-
-```text
-Idle_A: Loop Time On
-Running_A: Loop Time On
-Attack_Slice_Horizontal: Loop Time Off
-Dodge_Forward: Loop Time Off
-```
-
-회피가 공격을 덮어쓰지 않으면 Animator에 아래 전환을 추가한다.
-
-```text
-Attack_Slice_Horizontal -> Dodge
-Condition: IsDodging == true
-Has Exit Time: Off
-Transition Duration: 0.05
-```
-
----
-
-## 13. 현재 정확한 중단 지점
-
-현재 사용자는 다음까지 완료하고 테스트했다.
-
-```text
-공격 Animation Event 연결 완료
-공격 판정 테스트 완료
-회피 애니메이션 연결 완료
-회피 테스트 완료
-공격 중 회피 캔슬 완료
-회피 중 무적 완료
-회피 중 공격 불가 / 회피 중 이동 불가 / 공격 중 이동 가능 / 사망 중 모든 입력 불가 규칙 적용 진행
-죽은 뒤 WASD가 동작하는 것처럼 보이는 문제를 확인
-PlayerAnimationController에 사망 체크가 필요하다는 원인 파악
-```
-
-다음 대화에서 바로 시작할 작업:
-
-```text
-사망 애니메이션 연결
-```
-
-정확한 시작점:
-
-```text
-1. 실제 PlayerAnimationController.cs를 읽는다.
-2. Health 참조와 사망 시 Animator 파라미터 초기화가 반영되어 있는지 확인한다.
-3. Animator에 Bool IsDead 파라미터를 추가하도록 안내한다.
-4. Death_A / Death_A_Pose 클립을 연결하도록 안내한다.
-5. PlayerAnimationController에서 Health.IsDead를 Animator의 IsDead로 전달하는 전체 코드를 주석과 함께 보여준다.
-6. 사용자가 직접 적용한 뒤 Inspector 연결과 테스트 절차를 안내한다.
-```
-
----
-
-## 14. 다음에 안내할 사망 애니메이션 방향
-
-KayKit 사망 애니메이션 원본:
-
-```text
-Assets/99.Assets/kaykit_Anim/Animations/fbx/Rig_Medium/Rig_Medium_General.fbx
-```
-
-사용 후보:
-
-```text
-Death_A
-Death_B
-Death_A_Pose
-Death_B_Pose
-```
-
-처음 추천:
-
-```text
-Death_A -> 죽는 순간 재생되는 모션
-Death_A_Pose -> 죽은 뒤 유지되는 포즈
-```
-
-Animator 파라미터 추가:
-
-```text
-Bool IsDead
-```
-
-Animator 전환:
-
-```text
-Any State -> Death
-Condition: IsDead == true
-Has Exit Time: Off
-Transition Duration: 0.05
-
-Death -> DeathPose
-Has Exit Time: On
-Exit Time: 0.95
-Condition 없음
-```
-
-Loop 설정:
-
-```text
-Death_A: Loop Time Off
-Death_A_Pose: 보통 Loop Time Off 또는 On 모두 큰 문제 없음
-```
-
-`PlayerAnimationController` 수정 방향:
-
-```text
-Health health 참조 추가
-int isDeadHash 추가
-Awake에서 isDeadHash = Animator.StringToHash("IsDead")
-Update에서 죽었으면 IsDead true, 이동/공격/회피 파라미터 초기화
-살아있으면 IsDead false 후 기존 이동/회피/공격 갱신
-```
-
-사망 상태에서 기대 흐름:
-
-```text
-Health.TakeDamage()
--> currentHealth <= 0
--> Die()
--> isDead = true
--> PlayerMoveController 이동 중단
--> PlayerCameraController 시점 회전 중단
--> PlayerCombat 공격 중단
--> PlayerDodgeController 회피 중단
--> PlayerAnimationController IsDead true
--> Death_A 재생
--> Death_A_Pose 유지
-```
-
----
-
-## 15. 다음 대화에서 먼저 읽어야 할 파일
-
-새 컴퓨터에서 이어갈 때 Codex는 우선 아래 파일을 읽는다.
-
-```text
-Assets/02.Scripts/Player/PlayerAnimationController.cs
-Assets/02.Scripts/Player/PlayerMoveController.cs
-Assets/02.Scripts/Player/PlayerCameraController.cs
-Assets/02.Scripts/Player/PlayerCombat.cs
-Assets/02.Scripts/Player/PlayerDodgeController.cs
-Assets/02.Scripts/Combat/Health.cs
-Assets/02.Scripts/Combat/AttackArea.cs
-Assets/03.Art/Animations/PlayerAnimatorController.controller
-```
-
-그 다음 현재 Inspector 연결 상태를 프리팹 또는 씬 파일 기준으로 확인한다.
-
-```text
-Assets/03.Art/Prefabs/Player.prefab
-Assets/01.Scenes/SampleScene.unity
-```
-
----
-
-## 16. 새 Codex에게 전달할 요약 문장
-
-다른 컴퓨터에서 이 파일을 전달할 때 사용자는 다음처럼 요청하면 된다.
-
-> 이 문서는 DungeonCore 작업의 최신 인수인계 자료야. 문서 내용을 참고하되 실제 프로젝트 파일을 먼저 읽고 확인해. 나는 코드를 직접 작성하면서 이해하고 싶으니, 내가 명확히 요청하지 않으면 파일을 직접 수정하지 말고 전체 코드, 변경 지점, 클래스/변수/메소드 주석, 실행 흐름, Unity Inspector 연결법, Animator 설정법, 테스트 방법을 자세히 설명해줘. 현재 중단 지점은 공격/회피/무적/상태 규칙 테스트 이후이며, 다음 작업은 사망 애니메이션 연결부터 시작하면 돼.
+> 인수인계 문서와 실제 파일을 확인해줘. PlayerSkillController 입력·개별 쿨타임 코드는 아직 작성하지 않았어. 그 작성 단계부터 전체 코드와 주석, Inspector 연결, 테스트와 학습 효과를 설명해줘. 현재 SD 전사·거너 방향을 유지하고, 기본 공격 변경은 보류한 채 Skill1_SlashAttack(Attack_Slash), Skill2_SpinAttack(Attack_Spin) 두 스킬부터 진행할 거야. 이펙트는 나중에 추가해. 명시적으로 요청하지 않으면 코드나 씬을 직접 수정하지 마.
