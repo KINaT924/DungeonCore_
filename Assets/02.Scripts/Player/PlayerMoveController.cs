@@ -9,6 +9,8 @@ public class PlayerMoveController : MonoBehaviour
     [Header("레퍼런스")]
     [SerializeField] PlayerInputReader inputReader;              // 플레이어 입력값을 전달해주는 스크립트 참조 변수
     [SerializeField] PlayerDodgeController dodgeCtr;             // 플레이어의 회피 동작을 처리하는 컴포넌트 참조 변수
+    [SerializeField] PlayerSkillController skillCtr;             // 플레이어의 스킬 동작을 처리하는 컴포넌트 참조 변수
+    [SerializeField] PlayerCombat playerCombat;                  // 플레이어의 공격 동작을 처리하는 컴포넌트 참조 변수
     [SerializeField] Transform cameraTranform;                   // 카메라의 위치값 -> 카메라 바라보는 방향으로 움직이기위해
     CharacterController characterCtr;                            // 실제 플레이어의 이동을 처리하는 컴포넌트 참조 변수
 
@@ -22,6 +24,10 @@ public class PlayerMoveController : MonoBehaviour
     {
         if(health == null)
             health = GetComponent<Health>();
+        if(skillCtr == null)
+            skillCtr = GetComponent<PlayerSkillController>();
+        if(playerCombat == null)
+            playerCombat = GetComponent<PlayerCombat>();
 
         characterCtr = GetComponent<CharacterController>();
     }
@@ -57,6 +63,10 @@ public class PlayerMoveController : MonoBehaviour
         if(characterCtr == null)
             return;
         if (dodgeCtr != null && dodgeCtr.IsDodging)
+            return;
+        if (skillCtr != null && skillCtr.IsUsingSkill)
+            return;
+        if (playerCombat != null && playerCombat.IsAttacking)
             return;
 
 

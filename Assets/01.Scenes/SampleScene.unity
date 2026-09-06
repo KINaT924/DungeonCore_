@@ -231,11 +231,27 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 132710012}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &160602038 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7316887772059273915, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+  m_PrefabInstance: {fileID: 1981298453}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &173622526 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4634015750696038175, guid: c36e240928ebd7c489eedc13850c9042, type: 3}
   m_PrefabInstance: {fileID: 936195785}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &314390153 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2789476240680246240, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+  m_PrefabInstance: {fileID: 1981298453}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fa866cd1bf78d045bc773cadbd45644, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AttackArea
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
@@ -324,7 +340,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
-  m_LocalPosition: {x: 0, y: 8.904009, z: -14.828323}
+  m_LocalPosition: {x: 0, y: 7.904008, z: -14.828323}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1173,7 +1189,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6701383727240723606, guid: c36e240928ebd7c489eedc13850c9042, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1283,6 +1299,17 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1253018718 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6039561196287633999, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+  m_PrefabInstance: {fileID: 1981298453}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7fa866cd1bf78d045bc773cadbd45644, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AttackArea
 --- !u!1 &1290232722
 GameObject:
   m_ObjectHideFlags: 0
@@ -1590,7 +1617,7 @@ Transform:
   m_GameObject: {fileID: 1418290631}
   serializedVersion: 2
   m_LocalRotation: {x: 0.13052616, y: -0, z: -0, w: 0.9914449}
-  m_LocalPosition: {x: 0, y: 8.904009, z: -14.828323}
+  m_LocalPosition: {x: 0, y: 7.904008, z: -14.828323}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1611,7 +1638,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1454744325
 Transform:
   m_ObjectHideFlags: 0
@@ -1857,14 +1884,38 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 625046143}
     m_Modifications:
+    - target: {fileID: 332830066444382361, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2381669567082416071, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+      propertyPath: skillCtr
+      value: 
+      objectReference: {fileID: 1981298466}
+    - target: {fileID: 2473949701563829065, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+      propertyPath: skillCtr
+      value: 
+      objectReference: {fileID: 1981298466}
+    - target: {fileID: 2473949701563829065, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+      propertyPath: playerCombat
+      value: 
+      objectReference: {fileID: 1981298458}
     - target: {fileID: 2473949701563829065, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
       propertyPath: cameraTranform
       value: 
       objectReference: {fileID: 330585546}
     - target: {fileID: 4159217814928632301, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+      propertyPath: skillCtr
+      value: 
+      objectReference: {fileID: 1981298466}
+    - target: {fileID: 4159217814928632301, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
       propertyPath: cameraTranform
       value: 
       objectReference: {fileID: 330585546}
+    - target: {fileID: 7227006675693202464, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+      propertyPath: skillCtr
+      value: 
+      objectReference: {fileID: 1981298466}
     - target: {fileID: 7316887772059273915, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
       propertyPath: m_Name
       value: Player_Knight
@@ -1909,10 +1960,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8703433463036323057, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+      propertyPath: minPitch
+      value: 8
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7316887772059273915, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+      insertIndex: 10
+      addedObject: {fileID: 1981298466}
   m_SourcePrefab: {fileID: 100100000, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
 --- !u!4 &1981298454 stripped
 Transform:
@@ -1924,12 +1982,79 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5534568858962471113, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
   m_PrefabInstance: {fileID: 1981298453}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 160602038}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 295323bf84f775b41843673c05ce2ace, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Health
+--- !u!114 &1981298457 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2381669567082416071, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+  m_PrefabInstance: {fileID: 1981298453}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 160602038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01215dd67ae7f2d48a8ef3ad86742913, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerAnimationController
+--- !u!114 &1981298458 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7227006675693202464, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+  m_PrefabInstance: {fileID: 1981298453}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 160602038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d4bb0644f02749c4d9b9783b4e0c6677, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerCombat
+--- !u!114 &1981298459 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4159217814928632301, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+  m_PrefabInstance: {fileID: 1981298453}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 160602038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2bba291bf04062440bc586b08cde8f08, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDodgeController
+--- !u!114 &1981298463 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6496189785100955814, guid: 09c7ed1bbd0f1a442976584cfe01aa9c, type: 3}
+  m_PrefabInstance: {fileID: 1981298453}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 160602038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22543f3bd5cc3504f8019b349417780f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerInputReader
+--- !u!114 &1981298466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 160602038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 507b567c3e3025a448a7dc7cdad6df82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillController
+  inputReader: {fileID: 1981298463}
+  health: {fileID: 1981298456}
+  dodgeCtr: {fileID: 1981298459}
+  playerCombat: {fileID: 1981298458}
+  animCtr: {fileID: 1981298457}
+  skill1Area: {fileID: 314390153}
+  skill2Area: {fileID: 1253018718}
+  skill1Damage: 30
+  skill2Damage: 50
+  skill1CoolTime: 5
+  skill2CoolTime: 8
 --- !u!1 &2060573881
 GameObject:
   m_ObjectHideFlags: 0

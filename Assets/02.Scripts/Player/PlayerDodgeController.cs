@@ -11,6 +11,7 @@ public class PlayerDodgeController : MonoBehaviour
     [SerializeField] PlayerInputReader inputReader;              // 플레이어 입력값을 전달해주는 컴포넌트 참조 변수
     [SerializeField] Transform cameraTranform;                   // 회피 방향을 계산하기 위해 사용될 카메라 변수
     [SerializeField] PlayerCombat playerCombat;                  // 플레이어 입력 판정을 처리하기위한 컴포넌트 참조 변수
+    [SerializeField] PlayerSkillController skillCtr;             // 플레이어 스킬 입력 판정을 처리하기위한 컴포넌트 참조 변수
     [SerializeField] Health health;                              // 플레이어가 사망했는지 알기위한 체력 확인 컴포넌트
     CharacterController characterCtr;                            // 실제 플레이어의 회피를 처리하는 컴포넌트 참조 변수
 
@@ -31,6 +32,8 @@ public class PlayerDodgeController : MonoBehaviour
             health = GetComponent<Health>();
         if (playerCombat == null)
             playerCombat = GetComponent<PlayerCombat>();
+        if (skillCtr == null)
+            skillCtr = GetComponent<PlayerSkillController>();
 
         characterCtr = GetComponent<CharacterController>();
     }
@@ -103,6 +106,8 @@ public class PlayerDodgeController : MonoBehaviour
         // 회피중이면 공격판정을 취소
         if (playerCombat != null)
             playerCombat.CancelAttack();
+        if (skillCtr != null)
+            skillCtr.CancelSkill();
 
         dodgeDir = CalculateDodgeDirection();
         dodgeTimer = dodgeDur;

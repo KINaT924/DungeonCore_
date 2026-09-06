@@ -13,6 +13,7 @@ public class PlayerCombat : MonoBehaviour
     [SerializeField] PlayerInputReader inputReader;             // 입력 이벤트를 위한 참조
     [SerializeField] AttackArea attackArea;                     // 실제 공격 범위의 중심 오브젝트
     [SerializeField] PlayerDodgeController dodgeCtr;            // 회피 중 공격 입력을 막기 위한 회피 컴포넌트
+    [SerializeField] PlayerSkillController skillCtr;            // 스킬 사용 중 공격 입력을 막기 위한 스킬 컴포넌트
     [SerializeField] Health health;                             // 플레이어가 사망했는지 알기위한 체력 확인 컴포넌트
 
     [Header("공격 설정")]
@@ -29,6 +30,8 @@ public class PlayerCombat : MonoBehaviour
             dodgeCtr = GetComponent<PlayerDodgeController>();
         if (health == null)
             health = GetComponent<Health>();
+        if (skillCtr == null)
+            skillCtr = GetComponent<PlayerSkillController>();
     }
     void OnEnable()
     {
@@ -79,6 +82,8 @@ public class PlayerCombat : MonoBehaviour
             return;
         if (dodgeCtr != null && dodgeCtr.IsDodging)
             return;
+        if(skillCtr != null && skillCtr.IsUsingSkill)
+            return;
 
         // 공격중일 때 또 공격을 반복하는것을 방지
         if (isAttacking)
@@ -108,7 +113,13 @@ public class PlayerCombat : MonoBehaviour
     // 공격 애니메이션의 특정 프레임에서 호출되는 메소드
     public void EnableAttackArea()
     {
-        if (attackArea == null)
+        if (!isAttacking || attackArea == null)
+            return;
+        if (health != null && health.IsDead)
+            return;
+        if (dodgeCtr != null && dodgeCtr.IsDodging)
+            return;
+        if (skillCtr != null && skillCtr.IsUsingSkill)
             return;
 
         // 해당 데미지만큼 피해

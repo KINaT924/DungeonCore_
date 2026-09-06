@@ -12,6 +12,7 @@ public class PlayerAnimationController : MonoBehaviour
     [SerializeField] PlayerInputReader inputReader;                 // 입력 이벤트를 위한 참조
     [SerializeField] PlayerDodgeController dodgeCtr;                // 플레이어의 회피 상태를 확인하기 위한 참조
     [SerializeField] PlayerCombat playerCombat;                     // 플레이어의 공격 상태를 확인하기 위한 참조
+    [SerializeField] PlayerSkillController skillCtr;                // 플레이어의 스킬 상태를 확인하기 위한 참조
     [SerializeField] Health health;                         // 플레이어가 사망했는지 알기위한 체력 확인 컴포넌트
 
     [Header("애니메이션 설정")]
@@ -42,6 +43,8 @@ public class PlayerAnimationController : MonoBehaviour
             dodgeCtr = GetComponent<PlayerDodgeController>();
         if(playerCombat == null)
             playerCombat = GetComponent<PlayerCombat>();
+        if(skillCtr == null)
+            skillCtr = GetComponent<PlayerSkillController>();
 
         // 매번 검색하지않도록 해시값을 통하여 시작할 때 미리 대입
         moveXHash = Animator.StringToHash("MoveX");
@@ -95,6 +98,8 @@ public class PlayerAnimationController : MonoBehaviour
         animator.SetBool(isAttackingHash, false);
         wasAttacking = false;
         animator.ResetTrigger(attackHash);          // 사망 직전 생성된 Trigger 제거
+
+        ResetSkillTriggers();       // 사망 직전 생성된 Trigger 제거
     }
     // 플레이어인풋리더에서 현재 입력값을 읽어 애니메이터에 전달하는 역할
     void UpdateMoveAnimation()
@@ -102,8 +107,15 @@ public class PlayerAnimationController : MonoBehaviour
         if (inputReader == null)
             return;
 
+
+        bool isAttacking = playerCombat != null && playerCombat.IsAttacking;
+        bool isUsingSkill = skillCtr != null && skillCtr.IsUsingSkill;
+
         // 좌우앞뒤 입력값을 받고 전체 크기값을 구한뒤 실제 이동 입력이 들어오는지 확인
-        Vector2 moveInput = inputReader.MoveInput;
+        Vector2 moveInput = Vector2.zero;
+        if (!isAttacking && !isUsingSkill)
+            moveInput = inputReader.MoveInput;
+
         float moveX = moveInput.x;
         float moveY = moveInput.y;
         float moveAmount = Mathf.Clamp01(moveInput.magnitude);
@@ -143,5 +155,38 @@ public class PlayerAnimationController : MonoBehaviour
 
         // 공격중일 때프레임마다 반복실행되는것을 방지
         wasAttacking = isAttacking;
+    }
+
+    // 스킬 사용을 승인받았을 때 호출    
+    public void PlayerSkill1Animation()
+    {
+        if (animator == null)
+            return;
+
+        ResetSkillTriggers();
+        animator.SetTrigger("Skill1");
+        animator.ResetTrigger(attackHash);
+        animator.SetBool(isAttackingHash, false);
+    }
+    public void PlayerSkill2Animation()
+    {
+        if (animator == null)
+            return;
+
+        ResetSkillTriggers();
+        animator.SetTrigger("Skill2");
+        animator.ResetTrigger(attackHash);
+        animator.SetBool(isAttackingHash, false);
+    }
+
+
+    // 다른 스킬이나 공격 애니메이션이 겹치지 않도록 스킬 트리거를 초기화
+    void ResetSkillTriggers()
+    {
+        if (animator == null)
+            return;
+
+        animator.ResetTrigger("Skill1");
+        animator.ResetTrigger("Skill2");
     }
 }
