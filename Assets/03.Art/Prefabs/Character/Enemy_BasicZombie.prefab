@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6740562634582808885}
   - component: {fileID: 7880887103337285823}
   m_Layer: 3
-  m_Name: Enumy_BasicZombie
+  m_Name: Enemy_BasicZombie
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

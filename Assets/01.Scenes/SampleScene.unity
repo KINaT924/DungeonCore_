@@ -2263,7 +2263,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4590423375042400460, guid: 5739f26e54c407740976c88590086410, type: 3}
       propertyPath: m_Name
-      value: Enumy_BasicZombie
+      value: Enemy_BasicZombie
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
