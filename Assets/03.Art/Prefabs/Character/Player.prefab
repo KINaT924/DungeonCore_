@@ -156,7 +156,7 @@ Transform:
   m_GameObject: {fileID: 3591164061653344058}
   serializedVersion: 2
   m_LocalRotation: {x: 0.13052616, y: 0, z: 0, w: 0.9914449}
-  m_LocalPosition: {x: 0, y: 8, z: -13}
+  m_LocalPosition: {x: 0, y: 7, z: -13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -464,6 +464,9 @@ PrefabInstance:
       addedObject: {fileID: 2381669567082416071}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f30fd8bee74210a408d33a32ff0ffc99, type: 3}
       insertIndex: -1
+      addedObject: {fileID: 1449140358282186161}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: f30fd8bee74210a408d33a32ff0ffc99, type: 3}
+      insertIndex: -1
       addedObject: {fileID: 5534568858962471113}
   m_SourcePrefab: {fileID: 100100000, guid: f30fd8bee74210a408d33a32ff0ffc99, type: 3}
 --- !u!1 &7316887772059273915 stripped
@@ -702,6 +705,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMoveContoller
   inputReader: {fileID: 6496189785100955814}
   dodgeCtr: {fileID: 4159217814928632301}
+  skillCtr: {fileID: 1449140358282186161}
+  playerCombat: {fileID: 7227006675693202464}
   cameraTranform: {fileID: 0}
   health: {fileID: 5534568858962471113}
   moveSpeed: 5
@@ -724,7 +729,7 @@ MonoBehaviour:
   health: {fileID: 5534568858962471113}
   mouseSenitivity: 0.12
   invertY: 0
-  minPitch: -5
+  minPitch: 8
   maxPitch: 10
   lookCursorOnstart: 1
 --- !u!114 &4159217814928632301
@@ -742,6 +747,7 @@ MonoBehaviour:
   inputReader: {fileID: 6496189785100955814}
   cameraTranform: {fileID: 0}
   playerCombat: {fileID: 7227006675693202464}
+  skillCtr: {fileID: 1449140358282186161}
   health: {fileID: 5534568858962471113}
   dodgeSpeed: 15
   dodgeDur: 0.4
@@ -761,6 +767,7 @@ MonoBehaviour:
   inputReader: {fileID: 6496189785100955814}
   attackArea: {fileID: 5345802992298173858}
   dodgeCtr: {fileID: 4159217814928632301}
+  skillCtr: {fileID: 1449140358282186161}
   health: {fileID: 5534568858962471113}
   attackDamage: 20
   attackCoolTime: 0.5
@@ -780,8 +787,32 @@ MonoBehaviour:
   inputReader: {fileID: 6496189785100955814}
   dodgeCtr: {fileID: 4159217814928632301}
   playerCombat: {fileID: 7227006675693202464}
+  skillCtr: {fileID: 1449140358282186161}
   health: {fileID: 5534568858962471113}
   dampTime: 0.1
+--- !u!114 &1449140358282186161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7316887772059273915}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 507b567c3e3025a448a7dc7cdad6df82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillController
+  inputReader: {fileID: 6496189785100955814}
+  health: {fileID: 5534568858962471113}
+  dodgeCtr: {fileID: 4159217814928632301}
+  playerCombat: {fileID: 7227006675693202464}
+  animCtr: {fileID: 2381669567082416071}
+  skill1Area: {fileID: 2789476240680246240}
+  skill2Area: {fileID: 6039561196287633999}
+  skill1Damage: 30
+  skill2Damage: 50
+  skill1CoolTime: 5
+  skill2CoolTime: 8
 --- !u!114 &5534568858962471113
 MonoBehaviour:
   m_ObjectHideFlags: 0
