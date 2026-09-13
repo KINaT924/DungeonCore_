@@ -35,4 +35,11 @@ public class EnemyAnimationEvents : MonoBehaviour
         if (enemyCtr != null)
             enemyCtr.EndAttack();
     }
+    
+    // Hit 애니메이션이 끝났음을 전달
+    public void EndHit()
+    {
+        if(enemyCtr != null)
+            enemyCtr.EndHit();
+    }
 }

@@ -17,7 +17,9 @@ public class EnemyController : MonoBehaviour
     { 
         Idle,
         Chase,
-        Attack
+        Attack,
+        Hit,
+        Dead
     }
 
 
@@ -38,13 +40,6 @@ public class EnemyController : MonoBehaviour
     [SerializeField, Min(0.01f)] float attackExitBuffer = 0.3f;         // 공격 범위 경계를 넘어서면 추적상태로 변경하기위한 값
     [SerializeField, Min(0.05f)] float repathInterval = 0.2f;           // 추적 중 경로를 갱신하는 간격
 
-
-    [Header("코어 범위 - 단일 코어 테스트")]
-    // 코어 생성 시스템이 아직 없으므로 인스펙터상으로 직접연결합니다 코어가 생성되면 삭제됩니다
-    // 실제 시스템에서는 SetCoreArea로 현재 코어와 반경을 전달합니다
-    [SerializeField] Transform coreCenter;                  // 현재 활성 코어 Transform. 코어가 없으면 null을 전달합니다
-    [SerializeField, Min(0f)] float coreRadius = 8f;        // 현재 활성 코어의 영향 반경. 코어가 없으면 0을 전달합니다
-
     [Header("현재 상태 - 실행 중 확인")]
     [SerializeField] eEnemyState curState;              // 현재 상태를 표시
     [SerializeField] bool isCoreBoosted;                // 현재 코어 강화 상태를 표시
@@ -54,6 +49,8 @@ public class EnemyController : MonoBehaviour
     int moveSpeedHash;                      // Animator MoveSpeed 파라미터 해시
     int coreBoostedHash;                    // Animator IsCoreBoosted 파라미터 해시
     int attackHash;                         // Animator Attack 파라미터 해시
+    int hitHash;                                // Animator Hit 파라미터 해시
+    int isDeadHash;                         // Animator Dead 파라미터 해시
     bool hasCoreParameter;                  // Animator에 IsCoreBoosted 파라미터가 연결되어 있는지 확인
     bool hasOpenedAttackArea;               // 중복 이벤트로 같은 공격판정을 막는 해시
     bool isAttacking;                       // 공격 중인지 확인
@@ -82,6 +79,8 @@ public class EnemyController : MonoBehaviour
         moveSpeedHash = Animator.StringToHash("MoveSpeed");
         coreBoostedHash = Animator.StringToHash("IsCoreBoosted");
         attackHash = Animator.StringToHash("Attack");
+        hitHash = Animator.StringToHash("Hit");
+        isDeadHash = Animator.StringToHash("IsDead");
 
         // Animator에 IsCoreBoosted 파라미터가 연결되어 있는지 확인
         foreach (AnimatorControllerParameter parameter in anim.parameters)
@@ -106,7 +105,16 @@ public class EnemyController : MonoBehaviour
         curState = eEnemyState.Idle;
         repathTimer = 0f;
         if (health != null)
+        {
+            health.OnDamaged += HandleDamaged;
             health.OnDied += HandleDeath;
+        }
+
+        if(anim != null)
+        {
+            anim.ResetTrigger(hitHash);
+            anim.SetBool(isDeadHash, false);
+        }
 
         // Health 재설정 등 전체 오브젝트 풀 초기화는 이후 예정
     }
@@ -126,32 +134,48 @@ public class EnemyController : MonoBehaviour
     // 초기화 진입점에 미래 스포너가 생성 직후 호출하는 역할의 메소드
     // playerHealth는 추적할 플레이어, activeCore와 radius는 현재 코어 정보입니다
     // 코어가 없으면 null을 전달하며 추적 자체에는 영향이 없습니다
-    public void Initialize(Health playerHealth, Transform activeCore, float radius)
+    public void Initialize(Health playerHealth, bool coreBoosted)
     {
         targetHealth = playerHealth;
-        SetCoreArea(activeCore, radius);
         repathTimer = 0f;
+        attackCoolTimer = 0f;
+
+        isAttacking = false;
+        hasCoreParameter = false;
+
+        DisableAttackArea();
+        SetCoreBoosted(coreBoosted);
     }
 
-
-    // 코어 생성,제거 시 범위를 갱신
-    // 제거 시 null을 전달, 현재는 활성 코어 한 개를 지원
-    public void SetCoreArea(Transform activeCore, float radius)
+    // 현재 맵에 활성화 되어 있는 코어가 존재한다면
+    // 몬스터에 상태오 스탯을 변경
+    public void SetCoreBoosted(bool boosted)
     {
-        coreCenter = activeCore;
-        coreRadius = Mathf.Max(0f, radius);
+        isCoreBoosted = boosted;
+
+        if (agent != null)
+            agent.speed = isCoreBoosted ? runSpeed : walkSpeed;
+        if (anim != null && hasCoreParameter)
+            anim.SetBool(coreBoostedHash, isCoreBoosted);
     }
 
     // 코어와 대상을 확인 후 현재 상태의 행동 실행
     // 대상이 없거나 본인이 사망, 혹은 NavMesh가 비활성화 된다면 행동 중지
     void Update()
     {
+        // 사망 시 애니메이션 변경과 행동 중지
+        if(health.IsDead)
+        {
+            ChangeState(eEnemyState.Dead);
+            StopMovement();
+            return;
+        }
+
+
         // 추적 중 공격 대기시간을 감소시켜 다시 접근했을 때 공격이 가능하도록 설정
         attackCoolTimer = Mathf.Max(0f, attackCoolTimer - Time.deltaTime);
 
-        UpdateCoreInfluence();
-        if (!CanNavigate() || health.IsDead || targetHealth == null ||
-            !targetHealth.gameObject.activeInHierarchy || targetHealth.IsDead)
+        if (!CanNavigate() || targetHealth == null || !targetHealth.gameObject.activeInHierarchy || targetHealth.IsDead)
         {
             ChangeState(eEnemyState.Idle);
             StopMovement();
@@ -171,22 +195,11 @@ public class EnemyController : MonoBehaviour
             case eEnemyState.Attack:
                 UpdateAttack();
                 break;
+            case eEnemyState.Hit:
+                break;
+            case eEnemyState.Dead:
+                break;
         }
-    }
-
-    // 몬스터 위치로 인한 코어 영향을 검사하는 메소드
-    // 코어가 제거되거나 범위를 벗어난다면 강화 효과가 제거되게 설정
-    // 현재 강화 효과는 이동속도만 강화 설정
-    void UpdateCoreInfluence()
-    {
-        isCoreBoosted = false;
-        if (coreCenter != null && coreCenter.gameObject.activeInHierarchy)
-        {
-            Vector3 offset = transform.position - coreCenter.position;
-            offset.y = 0f;
-            isCoreBoosted = offset.sqrMagnitude <= coreRadius * coreRadius;
-        }
-        agent.speed = isCoreBoosted ? runSpeed : walkSpeed;
     }
 
 
@@ -276,7 +289,6 @@ public class EnemyController : MonoBehaviour
     // 미사용된 트리거를 제거하고 모션을 Idle로 전환
     void CancelAttack()
     {
-        bool wasAttacking = isAttacking;
         isAttacking = false;
         DisableAttackArea();
 
@@ -284,10 +296,6 @@ public class EnemyController : MonoBehaviour
             return;
 
         anim.ResetTrigger(attackHash);
-
-        // 사망 모션을 추가할 시 변경
-        if (wasAttacking && anim.isActiveAndEnabled)
-            anim.CrossFadeInFixedTime("Base Layer.Idle", 0.05f);
     }
     // 상태 변경을 한 곳에 모아 이전 행동 종료 후 새 행동을 시작하는 메소드
     // 코어 강화 여부는 Chase 상태 변경 x
@@ -309,7 +317,8 @@ public class EnemyController : MonoBehaviour
             agent.isStopped = false;
             repathTimer = 0f;
         }
-        else StopMovement();
+        else 
+            StopMovement();
     }
 
     // 추적을 종료할 시 경로 제거, 공격 요청 취소 
@@ -345,11 +354,50 @@ public class EnemyController : MonoBehaviour
         if (anim != null) anim.SetFloat("MoveSpeed", 0f);
     }
 
-    // 사망 시 즉시 상태변경, 아직 애니메이션 연결 x
+
+    // 살아있는 상태에서 피해를 받으면 Hit 상태로 전환
+    void HandleDamaged(float damage)
+    {
+        if (health == null || health.IsDead)
+            return;
+
+        ChangeState(eEnemyState.Hit);
+
+        anim.ResetTrigger(hitHash);
+        anim.SetTrigger(hitHash);
+    }
+
+    // Hit 애니메이션이 끝날때 event로 호출
+    public void EndHit()
+    {
+        if (curState != eEnemyState.Hit)
+            return;
+        if (health == null || health.IsDead)
+            return;
+
+        // 대상이 존재하지않는다면 대기 상태로 전환
+        if (targetHealth == null  || targetHealth.IsDead || !targetHealth.gameObject.activeInHierarchy)
+        {
+            ChangeState(eEnemyState.Idle);
+            return;
+        }
+
+        // 피격 종료 시점에서 다시 거리를 계산
+        if (GetTargetDistance() <= attackRange)
+            ChangeState(eEnemyState.Attack);
+        else
+            ChangeState(eEnemyState.Chase);
+    }
+
+
+    // 사망 시 즉시 상태변경
     void HandleDeath()
     {
-        ChangeState(eEnemyState.Idle);
+        ChangeState(eEnemyState.Dead);
         StopMovement();
+
+        anim.ResetTrigger(hitHash);
+        anim.SetBool(isDeadHash, true);
     }
 
     // 실제 수평 속도와 코어 강화 조건을 별도로 Animator에 전달하는 메소드
@@ -371,7 +419,12 @@ public class EnemyController : MonoBehaviour
     // 비활성화 시 사망 구독을 해제하고 Agent 단독 이동을 방지하는 메소드
     void OnDisable()
     {
-        if (health != null) health.OnDied -= HandleDeath;
+        if (health != null)
+        {
+            health.OnDamaged -= HandleDamaged;
+            health.OnDied -= HandleDeath;
+        }
+
         CancelAttack();
         StopMovement();
     }
@@ -380,15 +433,6 @@ public class EnemyController : MonoBehaviour
     void OnValidate()
     {
         runSpeed = Mathf.Max(runSpeed, walkSpeed);
-    }
-
-    // 선택 시 몬스터가 검사하는 코어 수평 반경의 크기를 참고용으로 표시
-    void OnDrawGizmosSelected()
-    {
-        if (coreCenter == null) 
-            return;
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(coreCenter.position, coreRadius);
     }
 
     // 몬스터의 타격 시작 이벤트가 시작되면 공격 판정을 여는 과정

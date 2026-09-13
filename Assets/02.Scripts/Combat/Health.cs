@@ -24,7 +24,8 @@ public class Health : MonoBehaviour, IDamageable
     // 현재 체력이 변경되었다면 호출되는 이벤트
     // <변경된 현재 체력, 최대 체력> 의 값을 가지고 있습니다
     public event Action<float, float> OnHealthChanged;
-
+    // 피해를 받았지만 살아있는 경우 호출되는 이벤트
+    public event Action<float> OnDamaged;
     // 대상이 사망한 순간에 호출되는 이벤트
     public event Action OnDied;
 
@@ -39,8 +40,7 @@ public class Health : MonoBehaviour, IDamageable
     // 게임이 시작 될 때 현재 체력을 최대 체력으로 초기화
     void InitializeHealth()
     {
-        currentHealth = maxHealth;
-        isDead = false;
+        ResetHealth();
     }
 
     // IDamageable 인터페이스로부터 정의한 피해 처리 메소드
@@ -65,8 +65,12 @@ public class Health : MonoBehaviour, IDamageable
         // 체력 변경 사실을 전달
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
+        // 체력이 0이되면 피격 모션을 재생하지않고 바로 사망처리
         if (currentHealth <= 0f)
             Die();
+        // 아직 살아 있다면 피격 반응을 전달
+        else
+            OnDamaged?.Invoke(damage);
     }
 
 
@@ -82,6 +86,17 @@ public class Health : MonoBehaviour, IDamageable
         Debug.Log($"{gameObject.name}이 사망하였습니다");
 
         OnDied?.Invoke();
+    }
+
+    // 사망 혹은 비활성화 된 대상이 다시 사용할 수 있도록
+    // 체력과 상태를 리셋하는 메소드
+    public void ResetHealth()
+    {
+        currentHealth = maxHealth;
+        isDead = false;
+
+        // UI가 존재하는 경우 최대 체력으로 돌아간 사실을 전달
+        OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
     // 피해 테스트가 적용되는지 확인하기 위한 임시 메소드 적용될 시 삭제 예정
